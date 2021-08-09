@@ -3,7 +3,7 @@ class Tetromino {
     this.x = playfield.x + playfield.cubeSize * 4;
     this.y = playfield.y + playfield.cubeSize * 7;
     this.cubeSize = playfield.cubeSize;
-    this.vertices = [];
+    this.coords = [];
     this.dead = false;
     this.type = type;
     this.blocks = [
@@ -49,7 +49,7 @@ class Tetromino {
         [0, 0, 0],
       ],
     ];
-    this.updateVertices(this.blocks[this.type]);
+    this.updateCoords(this.blocks[this.type]);
   }
 }
 
@@ -126,8 +126,8 @@ Tetromino.prototype.rotate = function () {
     let collisionRight = false;
     let collisionBottom = false;
     let bump = 0;
-    this.updateVertices(copy);
-    this.vertices.forEach((v) => {
+    this.updateCoords(copy);
+    this.coords.forEach((v) => {
       // Right side overhang
       if (v.x > playfield.x + playfield.w) {
         let overHang = v.x - (playfield.x + playfield.w);
@@ -163,8 +163,8 @@ Tetromino.prototype.rotate = function () {
       this.blocks[this.type] = copy;
     }
   }
-  // Update Vertices
-  this.updateVertices(this.blocks[this.type]);
+  // Update coords
+  this.updateCoords(this.blocks[this.type]);
 };
 
 Tetromino.prototype.move = function (key) {
@@ -177,40 +177,39 @@ Tetromino.prototype.move = function (key) {
 
     // Left
     case 'a':
-      this.vertices.forEach((v) => {
+      this.coords.forEach((v) => {
         if (v.x == playfield.x) moveable = false;
       });
       if (moveable) this.x -= this.cubeSize; // Move Left
-      this.updateVertices(this.blocks[this.type]); // Update verts
+      this.updateCoords(this.blocks[this.type]); // Update coords
       if (playfield.collision(this)) this.x += this.cubeSize; // Move back if any collision
       break;
 
     // Right
     case 'd':
-      this.vertices.forEach((v) => {
+      this.coords.forEach((v) => {
         if (v.x == playfield.x + playfield.w - this.cubeSize) moveable = false;
       });
       if (moveable) this.x += this.cubeSize; // Move right
-      this.updateVertices(this.blocks[this.type]); // Update verts
+      this.updateCoords(this.blocks[this.type]); // Update coords
       if (playfield.collision(this)) this.x -= this.cubeSize; // Move back if any collision
       break;
 
     // Down
     case 's':
-      this.vertices.forEach((v) => {
+      this.coords.forEach((v) => {
         if (v.y == playfield.y + playfield.h - this.cubeSize) moveable = false;
       });
       if (moveable) this.y += this.cubeSize; // Move down
-      this.updateVertices(this.blocks[this.type]); // Update verts
+      this.updateCoords(this.blocks[this.type]); // Update coords
       if (playfield.collision(this)) this.y -= this.cubeSize; // Move back if any collision
       break;
   }
-  this.updateVertices(this.blocks[this.type]);
+  this.updateCoords(this.blocks[this.type]);
 };
 
-Tetromino.prototype.updateVertices = function (block) {
-  this.vertices = new Array();
-  // let block = this.blocks[this.type];
+Tetromino.prototype.updateCoords = function (block) {
+  this.coords = new Array();
   let x = this.x;
   let y = this.y;
 
@@ -221,55 +220,25 @@ Tetromino.prototype.updateVertices = function (block) {
     for (let j = 0; j < block[0].length; j++) {
       let cur = block[i][j];
       if (cur == 1) {
-        this.vertices.push(createVector(x, y));
+        this.coords.push(createVector(x, y));
 
-        // this.vertices.push(createVector(x + this.cubeSize, y));
+        // this.coords.push(createVector(x + this.cubeSize, y));
 
-        // this.vertices.push(createVector(x, y + this.cubeSize));
+        // this.coords.push(createVector(x, y + this.cubeSize));
 
-        // this.vertices.push(createVector(x + this.cubeSize, y + this.cubeSize));
+        // this.coords.push(createVector(x + this.cubeSize, y + this.cubeSize));
       }
       x += this.cubeSize;
     }
     y += this.cubeSize;
   }
 
-  // Filter duplicate vertices -- (copied from stack overflow)
-  this.vertices = this.vertices.filter((vert, index, self) => index === self.findIndex((v) => v.x === vert.x && v.y === vert.y));
+  // Filter duplicate coords -- (copied from stack overflow)
+  this.coords = this.coords.filter((coord, index, self) => index === self.findIndex((c) => c.x === coord.x && c.y === coord.y));
 };
 
-Tetromino.prototype.updateVerticesBackup = function (block) {
-  this.vertices = new Array();
-  // let block = this.blocks[this.type];
-  let x = this.x;
-  let y = this.y;
-
-  y = this.y - this.cubeSize;
-  for (let i = 0; i < block[0].length; i++) {
-    x = this.x - this.cubeSize;
-
-    for (let j = 0; j < block[0].length; j++) {
-      let cur = block[i][j];
-      if (cur == 1) {
-        this.vertices.push(createVector(x, y));
-
-        this.vertices.push(createVector(x + this.cubeSize, y));
-
-        this.vertices.push(createVector(x, y + this.cubeSize));
-
-        this.vertices.push(createVector(x + this.cubeSize, y + this.cubeSize));
-      }
-      x += this.cubeSize;
-    }
-    y += this.cubeSize;
-  }
-
-  // Filter duplicate vertices -- (copied from stack overflow)
-  this.vertices = this.vertices.filter((vert, index, self) => index === self.findIndex((v) => v.x === vert.x && v.y === vert.y));
-};
-
-Tetromino.prototype.drawVertices = function () {
-  this.vertices.forEach((v) => {
+Tetromino.prototype.drawCoords = function () {
+  this.coords.forEach((v) => {
     fill(255, 255, 0);
     circle(v.x, v.y, 25);
   });
@@ -294,8 +263,8 @@ Tetromino.prototype.rotateBackup = function () {
     let collisionLeft = false;
     let collisionRight = false;
     let bump = 0;
-    this.updateVertices(copy);
-    this.vertices.forEach((v) => {
+    this.updateCoords(copy);
+    this.coords.forEach((v) => {
       // Right side overhang
       if (v.x > playfield.x + playfield.w) {
         let overHang = v.x - (playfield.x + playfield.w);
@@ -322,8 +291,8 @@ Tetromino.prototype.rotateBackup = function () {
     // Update matrix
     this.blocks[this.type] = copy;
   }
-  // Update Vertices
-  this.updateVertices(this.blocks[this.type]);
+  // Update coords
+  this.updateCoords(this.blocks[this.type]);
 };
 
 Tetromino.prototype.moveBackup = function (key) {
@@ -335,7 +304,7 @@ Tetromino.prototype.moveBackup = function (key) {
 
     // Left
     case 'a':
-      this.vertices.forEach((v) => {
+      this.coords.forEach((v) => {
         if (v.x == playfield.x) moveable = false;
       });
       if (moveable) this.x -= this.cubeSize;
@@ -343,7 +312,7 @@ Tetromino.prototype.moveBackup = function (key) {
 
     // Right
     case 'd':
-      this.vertices.forEach((v) => {
+      this.coords.forEach((v) => {
         if (v.x == playfield.x + playfield.w) moveable = false;
       });
       if (moveable) this.x += this.cubeSize;
@@ -351,11 +320,11 @@ Tetromino.prototype.moveBackup = function (key) {
 
     // Down
     case 's':
-      this.vertices.forEach((v) => {
+      this.coords.forEach((v) => {
         if (v.y == playfield.y + playfield.h) moveable = false;
       });
       if (moveable) this.y += this.cubeSize;
       break;
   }
-  this.updateVertices(this.blocks[this.type]);
+  this.updateCoords(this.blocks[this.type]);
 };

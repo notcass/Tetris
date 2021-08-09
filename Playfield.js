@@ -105,10 +105,10 @@ class Playfield {
   }
 
   collision(active) {
-    let verts = active.vertices;
+    let coords = active.coords;
     let hit = false;
 
-    verts.forEach((v) => {
+    coords.forEach((v) => {
       this.deadBlocks.forEach((b) => {
         if (v.x == b.x && v.y == b.y) {
           hit = true;

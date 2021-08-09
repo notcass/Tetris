@@ -22,10 +22,6 @@
 
 let playfield;
 let curBlock;
-let blockObjTemplate = {
-  // need vertices to check for collision
-  // and the root x,y to draw the shapes
-};
 
 function setup() {
   let canvas = createCanvas(750, 950);
@@ -59,7 +55,7 @@ function draw() {
   background(0);
   playfield.show();
   curBlock.show();
-  curBlock.drawVertices();
+  curBlock.drawCoords();
 
   // Draw dead blocks
   playfield.showDeadBlocks();
@@ -80,10 +76,8 @@ function keyPressed() {
   }
   if (key === '3') {
     playfield.clearRow();
-    // playfield.filterTest();
   }
   if (key === '4') {
-    // playfield.deadBlocks.push(curBlock);
     playfield.killTetro(curBlock);
     let randBlock = floor(random(7));
     curBlock = new Tetromino(playfield, randBlock);
