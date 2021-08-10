@@ -28,7 +28,7 @@ function setup() {
   canvas.parent('sketch-holder');
   playfield = new Playfield();
 
-  // bottom blocks for removal testing
+  // Testing Blocks at the bottom
   curBlock = new Tetromino(playfield, 0);
   curBlock.x = 330;
   curBlock.y = 905;
@@ -44,6 +44,23 @@ function setup() {
   curBlock.y = 905;
   playfield.killTetro(curBlock);
 
+  curBlock = new Tetromino(playfield, 4);
+  curBlock.x = 195;
+  curBlock.y = 860;
+  playfield.killTetro(curBlock);
+
+  curBlock = new Tetromino(playfield, 1);
+  curBlock.x = 330;
+  curBlock.y = 860;
+  playfield.killTetro(curBlock);
+
+  curBlock = new Tetromino(playfield, 1);
+  curBlock.rotate();
+  curBlock.rotate();
+  curBlock.x = 465;
+  curBlock.y = 815;
+  playfield.killTetro(curBlock);
+
   // Active Block
   let randBlock = floor(random(7));
   curBlock = new Tetromino(playfield, 0);
@@ -56,6 +73,10 @@ function draw() {
   background(0);
   playfield.show();
   curBlock.show();
+
+  // Fall animation
+  playfield.fall(curBlock);
+  playfield.clearRow();
 
   // Draw dead blocks
   playfield.showDeadBlocks();

@@ -6,6 +6,10 @@ class Playfield {
     this.h = height - this.y;
     this.cubeSize = this.w / 10;
     this.deadBlocks = [];
+    this.slowFalling = true;
+    this.fastFalling = false;
+    this.fallToRow = 0;
+    this.fallSpeed = 3;
   }
 
   show() {
@@ -34,7 +38,9 @@ class Playfield {
 
     // Clear row/s
     if (rowsToClear.length != 0) {
-      console.log('rows being cleared');
+      console.log('rows being cleared:');
+      console.log(rowsToClear);
+      console.log(rowsToClear[0]);
 
       rowsToClear.forEach((r) => {
         this.deadBlocks = this.deadBlocks.filter((b) => b.y != r);
@@ -42,6 +48,20 @@ class Playfield {
 
       //TODO:
       // TRIGGER BLOCKS FALLING AFTER CLEAR
+      // BLOCKS ABOVE THE CLEARED ROW ONLY FALL AS FAR AS THE LOWEST CLEARED ROW
+      this.fastFalling = true;
+      this.fallToRow = rowsToClear[rowsToClear.length - 1];
+      // this.fallToRow = rowsToClear[0];
+    }
+
+    if (this.fastFalling) {
+      this.deadBlocks.forEach((b) => {
+        b.y += this.fallSpeed;
+        if (b.y == this.fallToRow) {
+          this.fastFalling = false;
+          this.fallToRow = 0;
+        }
+      });
     }
   }
 
@@ -93,7 +113,9 @@ class Playfield {
       }
       y += this.cubeSize;
     }
-    // console.log(this.deadBlocks);
+    // Spawn New Tetro
+    let randBlock = floor(random(7));
+    curBlock = new Tetromino(this, randBlock);
   }
 
   showDeadBlocks() {
@@ -116,5 +138,31 @@ class Playfield {
       });
     });
     return hit;
+  }
+
+  fall(cur) {
+    if (frameCount % 60 == 0 && this.slowFalling) {
+      cur.y += this.cubeSize;
+      cur.updateCoords(cur.blocks[cur.type]);
+
+      let atFloor = false;
+      cur.coords.forEach((c) => {
+        if (c.y == playfield.y + playfield.h - this.cubeSize) {
+          atFloor = true;
+        }
+      });
+
+      // If we're at the floor, spawn new block
+      // If we collide with other blocks, move back and spawn new tetro
+
+      if (this.collision(cur.coords)) {
+        cur.y -= this.cubeSize;
+        this.killTetro(cur);
+      }
+
+      if (atFloor) {
+        this.killTetro(cur);
+      }
+    }
   }
 }
