@@ -10,7 +10,7 @@
  *
  * 4. DONE -- Row Clearing
  *
- * 5. Collision check inside rotate function
+ * 5. DONE -- Collision check inside rotate function
  *
  * 6. Falling Animation
  *
@@ -47,18 +47,21 @@ function setup() {
   // Active Block
   let randBlock = floor(random(7));
   curBlock = new Tetromino(playfield, 0);
-  curBlock.x = 510;
-  curBlock.y = 770;
+  curBlock.x = 330;
+  curBlock.y = 725;
+  curBlock.updateCoords(curBlock.blocks[curBlock.type]);
 }
 
 function draw() {
   background(0);
   playfield.show();
   curBlock.show();
-  curBlock.drawCoords();
 
   // Draw dead blocks
   playfield.showDeadBlocks();
+
+  // Testing
+  curBlock.drawCoords();
 }
 
 function keyPressed() {

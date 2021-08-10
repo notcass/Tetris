@@ -104,8 +104,7 @@ class Playfield {
     });
   }
 
-  collision(active) {
-    let coords = active.coords;
+  collision(coords) {
     let hit = false;
 
     coords.forEach((v) => {
