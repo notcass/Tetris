@@ -32,15 +32,20 @@ class Playfield {
 
     // Analysing y counts
     for (let row in yCounts) {
-      // console.log(row + ' ' + yCounts[row]);
-      if (yCounts[row] > 9) rowsToClear.push(row);
+      if (frameCount % 60 == 0) {
+        // console.log(row + ' ' + yCounts[row]);
+      }
+      if (yCounts[row] > 9) {
+        // console.log(`row ${row} > 9`);
+
+        rowsToClear.push(row);
+      }
     }
 
     // Clear row/s
     if (rowsToClear.length != 0) {
-      console.log('rows being cleared:');
-      console.log(rowsToClear);
-      console.log(rowsToClear[0]);
+      // console.log('rows being cleared:');
+      // console.log(rowsToClear);
 
       rowsToClear.forEach((r) => {
         this.deadBlocks = this.deadBlocks.filter((b) => b.y != r);
@@ -51,15 +56,17 @@ class Playfield {
       // BLOCKS ABOVE THE CLEARED ROW ONLY FALL AS FAR AS THE LOWEST CLEARED ROW
       this.fastFalling = true;
       this.fallToRow = rowsToClear[rowsToClear.length - 1];
-      // this.fallToRow = rowsToClear[0];
+      console.log(`fallToRow ${this.fallToRow}`);
     }
 
     if (this.fastFalling) {
       this.deadBlocks.forEach((b) => {
-        b.y += this.fallSpeed;
         if (b.y == this.fallToRow) {
           this.fastFalling = false;
           this.fallToRow = 0;
+        }
+        if (b.y <= this.fallToRow) {
+          b.y += this.fallSpeed;
         }
       });
     }
@@ -121,8 +128,8 @@ class Playfield {
   showDeadBlocks() {
     this.deadBlocks.forEach((b) => {
       b.show();
-      fill(255, 255, 0);
-      circle(b.x, b.y, 25);
+      // fill(255, 255, 0);
+      // circle(b.x, b.y, 25);
     });
   }
 
@@ -141,7 +148,7 @@ class Playfield {
   }
 
   fall(cur) {
-    if (frameCount % 60 == 0 && this.slowFalling) {
+    if (frameCount % 30 == 0 && this.slowFalling) {
       cur.y += this.cubeSize;
       cur.updateCoords(cur.blocks[cur.type]);
 
@@ -154,13 +161,10 @@ class Playfield {
 
       // If we're at the floor, spawn new block
       // If we collide with other blocks, move back and spawn new tetro
-
       if (this.collision(cur.coords)) {
         cur.y -= this.cubeSize;
         this.killTetro(cur);
-      }
-
-      if (atFloor) {
+      } else if (atFloor) {
         this.killTetro(cur);
       }
     }
