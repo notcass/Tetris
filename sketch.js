@@ -16,18 +16,21 @@
  *
  *  DONE -- When tetro gets to 'floor', set to dead, spawn new
  *
- *  -- Add Quick fall when 's' key held
+ *  DONE -- Add Quick fall when 's' key held
  *
- *  -- Instead of random block, generate a random sequence of each block, pick next block in sequence
+ *  DONE -- Instead of random block, generate a random sequence of each block, pick next block in sequence
+ *
+ *  -- Add upcoming block
  *
  *  -- Score
  */
 
 /**
  * BUG LIST
- *  Can collide past the floor
+ *  FIXED -- Can collide past the floor
  *
- *  Sometimes a single block will fall slightly too far
+ *   -- VERY RARELY a single block will fall slightly too far
+ *             This seems to happen during the fastfall animation
  */
 
 let playfield;
@@ -36,6 +39,10 @@ let curBlock;
 function setup() {
   let canvas = createCanvas(750, 950);
   canvas.parent('sketch-holder');
+  resetGame();
+}
+
+function resetGame() {
   playfield = new Playfield();
 
   // Testing Blocks at the bottom
@@ -72,10 +79,8 @@ function setup() {
   // playfield.killTetro(curBlock);
 
   // Active Block
-  let randBlock = floor(random(7));
-  curBlock = new Tetromino(playfield, 0);
-  // curBlock.x = 555;
-  curBlock.y = 680;
+  playfield.spawnTetro();
+
   curBlock.updateCoords(curBlock.blocks[curBlock.type]);
 }
 
@@ -93,11 +98,11 @@ function draw() {
 
   // Testing
   // curBlock.drawCoords();
-  showRowVals();
+  // showRowVals();
 }
 
 function keyPressed() {
-  if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+  if (key === 'w' || key === 'a' || key === 'd') {
     curBlock.move(key);
   }
   if (key === 'e') {
@@ -110,7 +115,8 @@ function keyPressed() {
     if (curBlock.type < 6) curBlock.type++;
   }
   if (key === '3') {
-    playfield.clearRow();
+    curBlock.x = mouseX;
+    curBlock.y = mouseY;
   }
   if (key === '4') {
     playfield.killTetro(curBlock);

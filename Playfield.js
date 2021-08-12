@@ -10,9 +10,13 @@ class Playfield {
     this.fastFalling = false;
     this.fallToRow = 0;
     this.fallSpeed = 3;
+    this.sequenceCounter = 0;
+    this.sequence = this.genSequence();
   }
 
   show() {
+    // console.log(this.sequenceCounter);
+
     stroke(190);
     fill(255);
     for (let x = this.x; x < this.x + this.w; x += this.cubeSize) {
@@ -22,51 +26,16 @@ class Playfield {
     }
   }
 
-  clearRow() {
-    // Creating Object for y values and how many occurences
-    let yCounts = {};
-    let rowsToClear = [];
-    for (const b of this.deadBlocks) {
-      yCounts[b.y] = yCounts[b.y] ? yCounts[b.y] + 1 : 1;
+  genSequence() {
+    this.sequenceCounter = 0;
+    const nums = [0, 1, 2, 3, 4, 5, 6];
+    const sequence = [];
+    for (let i = 0; i < 7; i++) {
+      let next = random(nums);
+      nums.splice(nums.indexOf(next), 1);
+      sequence.push(next);
     }
-
-    // Analysing y counts
-    for (let row in yCounts) {
-      if (frameCount % 60 == 0) {
-        // console.log(row + ' ' + yCounts[row]);
-      }
-      if (yCounts[row] > 9) {
-        // console.log(`row ${row} > 9`);
-
-        rowsToClear.push(row);
-      }
-    }
-
-    // Clear row/s
-    if (rowsToClear.length != 0) {
-      // console.log('rows being cleared:');
-      // console.log(rowsToClear);
-
-      rowsToClear.forEach((r) => {
-        this.deadBlocks = this.deadBlocks.filter((b) => b.y != r);
-      });
-
-      this.fastFalling = true;
-      this.fallToRow = rowsToClear[rowsToClear.length - 1];
-      console.log(`fallToRow ${this.fallToRow}`);
-    }
-
-    if (this.fastFalling) {
-      this.deadBlocks.forEach((b) => {
-        if (b.y == this.fallToRow) {
-          this.fastFalling = false;
-          this.fallToRow = 0;
-        }
-        if (b.y <= this.fallToRow) {
-          b.y += this.fallSpeed;
-        }
-      });
-    }
+    return sequence;
   }
 
   // Create a block for each segment of a tetromino
@@ -98,11 +67,11 @@ class Playfield {
         if (cur == 1) {
           // Block Template
           let newBlock = {
-            x: x,
-            y: y,
-            r: r,
-            g: g,
-            b: b,
+            x,
+            y,
+            r,
+            g,
+            b,
             size: this.cubeSize,
             show: function () {
               fill(this.r, this.g, this.b);
@@ -117,17 +86,94 @@ class Playfield {
       }
       y += this.cubeSize;
     }
-    // Spawn New Tetro
-    let randBlock = floor(random(7));
-    curBlock = new Tetromino(this, randBlock);
+    // Spawn new Tetro from sequence
+    this.spawnTetro();
+  }
 
-    console.log('~Dead Blocks~');
-    console.log(this.deadBlocks);
+  spawnTetro() {
+    curBlock = new Tetromino(this, this.sequence[this.sequenceCounter]);
+    // console.log(`==============================`);
+    // console.log(`sequence: ${this.sequence}`);
+    // console.log(`counter: ${this.sequenceCounter}`);
+    // console.log(`Sequence type: ${this.sequence[this.sequenceCounter]}`);
+    // console.log(`Block type: ${curBlock.type}`);
+    this.sequenceCounter++;
+
+    if (this.sequenceCounter == 7) {
+      this.sequence = this.genSequence();
+    }
+  }
+
+  clearRow() {
+    // Creating Object for y values and how many occurences
+    let yCounts = {};
+    let rowsToClear = [];
+    for (const b of this.deadBlocks) {
+      yCounts[b.y] = yCounts[b.y] ? yCounts[b.y] + 1 : 1;
+
+      // Gameover Trigger
+      if (b.y == 95) {
+        resetGame();
+        console.log('~~== Game Over ==~~');
+        break;
+      }
+    }
+
+    // Analysing y counts
+    for (let row in yCounts) {
+      // if (frameCount % 60 == 0) console.log(row + ' ' + yCounts[row]);
+      if (yCounts[row] > 9) {
+        // console.log(`row ${row} > 9`);
+        rowsToClear.push(row);
+      }
+    }
+
+    // Clear row/s
+    if (rowsToClear.length != 0) {
+      // console.log('rows being cleared:');
+      // console.log(rowsToClear);
+
+      rowsToClear.forEach((r) => {
+        this.deadBlocks = this.deadBlocks.filter((b) => b.y != r);
+      });
+
+      this.fastFalling = true;
+      this.fallToRow = rowsToClear[rowsToClear.length - 1];
+      // console.log(`fallToRow ${this.fallToRow}`);
+    }
+
+    //FIXME:
+    // Because we loop through blocks from the highest to lowest,
+    // We move blocks that are above the bottom ones even though the bottom should be stopped, we just haven't checked it yet
+    // EDIT: I reversed the order but it still happens VERY RARELY
+    if (this.fastFalling) {
+      for (let i = this.deadBlocks.length - 1; i >= 0; i--) {
+        let cur = this.deadBlocks[i];
+        if (cur.y == this.fallToRow) {
+          this.fastFalling = false;
+          this.fallToRow = 0;
+        }
+        if (cur.y < this.fallToRow) {
+          cur.y += this.fallSpeed;
+        }
+      }
+      // this.deadBlocks.forEach((b) => {
+      //   if (b.y == this.fallToRow) {
+      //     this.fastFalling = false;
+      //     this.fallToRow = 0;
+      //   }
+      //   if (b.y < this.fallToRow) {
+      //     b.y += this.fallSpeed;
+      //   }
+      // });
+    }
   }
 
   showDeadBlocks() {
     this.deadBlocks.forEach((b) => {
       b.show();
+
+      // Show x, y positions
       // fill(255, 255, 0);
       // circle(b.x, b.y, 25);
     });
@@ -140,13 +186,7 @@ class Playfield {
       this.deadBlocks.forEach((b) => {
         if (c.x == b.x && c.y == b.y) {
           hit = true;
-          // console.log(`Hit on ${c.x}, ${c.y}`);
         }
-
-        // Clipping through floor fix?
-        // if (c.y >= this.y + this.h) {
-        // hit = true;
-        // }
       });
     });
     return hit;
@@ -166,41 +206,29 @@ class Playfield {
           atFloor = true;
         }
         if (c.y >= playfield.y + playfield.h) {
-          console.log('%c TRIGGERED passed floor', 'color: red');
-
+          // console.log('%c TRIGGERED passed floor', 'color: red');
           passedFloor = true;
         }
       });
 
-      // If we're at the floor, spawn new block
+      // If we're at the floor, spawn new tetro
       // If we collide with other blocks, move back and spawn new tetro
-      // if (this.collision(cur.coords)) {
-      //   cur.y -= this.cubeSize;
-      //   this.killTetro(cur);
-      // } else if (atFloor) {
-      //   console.log('at floor');
-
-      //   if (passedFloor) {
-      //     console.log('passed floor');
-
-      //     // cur.y -= this.cubeSize;
-      //     cur.y = 860;
-      //   }
-      //   this.killTetro(cur);
-      // }
 
       if (this.collision(cur.coords)) {
         cur.y -= this.cubeSize;
         this.killTetro(cur);
       } else if (atFloor) {
-        console.log('at floor');
+        // console.log('at floor');
       }
+
       if (passedFloor) {
-        console.log('%c noticed passed floor', 'color: green');
-        // LEFT OFF HERE
-        cur.y = 905; // This works for a horizontal I block that gets passed.
+        // console.log('%c noticed passed floor', 'color: green');
+        // cur.y = 905; // This works for a horizontal I block that gets passed.
         // But will need to be dynamic depending on the block and rotation
         // cur.coords.forEach(c => if c.y ?? something something something)
+
+        // I moved the bumping that was inside rotate() into its own function, seems to work great
+        cur.bumpCheck();
       }
 
       if (atFloor || passedFloor) {

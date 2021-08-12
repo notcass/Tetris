@@ -4,8 +4,10 @@
       "path": "."
     },
     {
-      "path": "..\\Lumines Clone"
+      "path": "..\\Testing"
     }
   ],
-  "settings": {}
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "Tetris"
+  }
 }

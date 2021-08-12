@@ -7,6 +7,7 @@ class Tetromino {
     this.coords = [];
     this.dead = false;
     this.type = type;
+    this.aliveTime = 0;
     this.blocks = [
       [
         [0, 0, 0, 0],
@@ -85,7 +86,6 @@ Tetromino.prototype.show = function () {
   }
   let x = this.x;
   let y = this.y;
-
   let block = this.blocks[this.type];
 
   y = this.y - this.cubeSize;
@@ -103,12 +103,13 @@ Tetromino.prototype.show = function () {
   }
 
   // DOWNWARD SLAM
-  if (keyIsPressed) {
+  if (keyIsPressed && this.aliveTime > 25) {
     if (keyIsDown(83)) this.move('s');
     // Too fast, need to slow down
     // else if (keyIsDown(65)) this.move('a');
     // else if (keyIsDown(68)) this.move('d');
   }
+  this.aliveTime++;
 };
 
 Tetromino.prototype.move = function (key) {
@@ -210,35 +211,8 @@ Tetromino.prototype.rotate = function () {
     // Update coords to analyze
     this.updateCoords(copy);
 
-    // Check for overhang
-    let xBump = 0;
-    let yBump = 0;
-
-    this.coords.forEach((c) => {
-      // Right
-      if (c.x >= playfield.x + playfield.w) {
-        xBump = -this.cubeSize;
-        if (c.x == playfield.x + playfield.w + this.cubeSize) xBump *= 2;
-      }
-
-      // Left
-      if (c.x < playfield.x) {
-        if (this.cubeSize > xBump) xBump = this.cubeSize;
-        if (c.x == playfield.x - this.cubeSize * 2) xBump = this.cubeSize * 2;
-      }
-
-      // Bottom
-      if (c.y >= playfield.y + playfield.h) {
-        if (yBump < this.cubeSize) yBump = -this.cubeSize;
-        if (c.y == playfield.y + playfield.h + this.cubeSize)
-          yBump = -(this.cubeSize * 2);
-      }
-    });
-
-    // Bump block away from the edge and update coords to the rotated tetro
-    this.x += xBump;
-    this.y += yBump;
-    this.updateCoords(copy);
+    // Check for overhang, store any bumps needed
+    let bumps = this.bumpCheck();
 
     // If the coords of the rotated tetro don't collide with anything, then update to the rotated tetro
     if (!playfield.collision(this.coords)) {
@@ -246,10 +220,41 @@ Tetromino.prototype.rotate = function () {
 
       // If they do collide, then don't update, and revert the bump.
     } else {
-      this.x -= xBump;
-      this.y -= yBump;
+      this.x -= bumps.xBump;
+      this.y -= bumps.yBump;
     }
 
     this.updateCoords(this.blocks[this.type]);
   }
+};
+
+Tetromino.prototype.bumpCheck = function () {
+  let xBump = 0;
+  let yBump = 0;
+
+  this.coords.forEach((c) => {
+    // Right
+    if (c.x >= playfield.x + playfield.w) {
+      xBump = -this.cubeSize;
+      if (c.x == playfield.x + playfield.w + this.cubeSize) xBump *= 2;
+    }
+
+    // Left
+    if (c.x < playfield.x) {
+      if (this.cubeSize > xBump) xBump = this.cubeSize;
+      if (c.x == playfield.x - this.cubeSize * 2) xBump = this.cubeSize * 2;
+    }
+
+    // Bottom
+    if (c.y >= playfield.y + playfield.h) {
+      if (yBump < this.cubeSize) yBump = -this.cubeSize;
+      if (c.y == playfield.y + playfield.h + this.cubeSize)
+        yBump = -(this.cubeSize * 2);
+    }
+  });
+
+  // Bump block away from the edge and update coords to the rotated tetro
+  this.x += xBump;
+  this.y += yBump;
+  return { xBump, yBump };
 };
