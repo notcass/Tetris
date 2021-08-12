@@ -2,22 +2,32 @@
 
 /**
  * TODO LIST
- * 1. DONE -- Collision with walls
+ *  DONE -- Collision with walls
  *
- * 2. DONE -- Array of all tetros on screen
+ *  DONE -- Array of all tetros on screen
  *
- * 3. DONE -- Collision with other tetrominos
+ *  DONE -- Collision with other tetrominos
  *
- * 4. DONE -- Row Clearing
+ *  DONE -- Row Clearing
  *
- * 5. DONE -- Collision check inside rotate function
+ *  DONE -- Collision check inside rotate function
  *
- * 6. DONE -- Falling Animation
+ *  DONE -- Falling Animation
  *
- * 7. DONE -- When tetro gets to 'floor', set to dead, spawn new
+ *  DONE -- When tetro gets to 'floor', set to dead, spawn new
  *
- * 8. Instead of random block, generate a random sequence of each block, pick next block in sequence
+ *  -- Add Quick fall when 's' key held
  *
+ *  -- Instead of random block, generate a random sequence of each block, pick next block in sequence
+ *
+ *  -- Score
+ */
+
+/**
+ * BUG LIST
+ *  Can collide past the floor
+ *
+ *  Sometimes a single block will fall slightly too far
  */
 
 let playfield;
@@ -112,6 +122,11 @@ function keyPressed() {
   }
   if (key === 'r') {
     redraw();
+  }
+  if (key === 't') {
+    for (let i = 0; i < playfield.deadBlocks.length; i++) {
+      playfield.deadBlocks[i].y -= i * 3;
+    }
   }
 }
 

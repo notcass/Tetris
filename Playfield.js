@@ -51,9 +51,6 @@ class Playfield {
         this.deadBlocks = this.deadBlocks.filter((b) => b.y != r);
       });
 
-      //TODO:
-      // TRIGGER BLOCKS FALLING AFTER CLEAR
-      // BLOCKS ABOVE THE CLEARED ROW ONLY FALL AS FAR AS THE LOWEST CLEARED ROW
       this.fastFalling = true;
       this.fallToRow = rowsToClear[rowsToClear.length - 1];
       console.log(`fallToRow ${this.fallToRow}`);
@@ -123,6 +120,9 @@ class Playfield {
     // Spawn New Tetro
     let randBlock = floor(random(7));
     curBlock = new Tetromino(this, randBlock);
+
+    console.log('~Dead Blocks~');
+    console.log(this.deadBlocks);
   }
 
   showDeadBlocks() {
@@ -136,12 +136,17 @@ class Playfield {
   collision(coords) {
     let hit = false;
 
-    coords.forEach((v) => {
+    coords.forEach((c) => {
       this.deadBlocks.forEach((b) => {
-        if (v.x == b.x && v.y == b.y) {
+        if (c.x == b.x && c.y == b.y) {
           hit = true;
-          // console.log(`Hit on ${v.x}, ${v.y}`);
+          // console.log(`Hit on ${c.x}, ${c.y}`);
         }
+
+        // Clipping through floor fix?
+        // if (c.y >= this.y + this.h) {
+        // hit = true;
+        // }
       });
     });
     return hit;
@@ -149,23 +154,59 @@ class Playfield {
 
   fall(cur) {
     if (frameCount % 30 == 0 && this.slowFalling) {
+      // console.log(`falling ${frameCount}`);
+
       cur.y += this.cubeSize;
       cur.updateCoords(cur.blocks[cur.type]);
 
       let atFloor = false;
+      let passedFloor = false;
       cur.coords.forEach((c) => {
         if (c.y == playfield.y + playfield.h - this.cubeSize) {
           atFloor = true;
+        }
+        if (c.y >= playfield.y + playfield.h) {
+          console.log('%c TRIGGERED passed floor', 'color: red');
+
+          passedFloor = true;
         }
       });
 
       // If we're at the floor, spawn new block
       // If we collide with other blocks, move back and spawn new tetro
+      // if (this.collision(cur.coords)) {
+      //   cur.y -= this.cubeSize;
+      //   this.killTetro(cur);
+      // } else if (atFloor) {
+      //   console.log('at floor');
+
+      //   if (passedFloor) {
+      //     console.log('passed floor');
+
+      //     // cur.y -= this.cubeSize;
+      //     cur.y = 860;
+      //   }
+      //   this.killTetro(cur);
+      // }
+
       if (this.collision(cur.coords)) {
         cur.y -= this.cubeSize;
         this.killTetro(cur);
       } else if (atFloor) {
-        this.killTetro(cur);
+        console.log('at floor');
+      }
+      if (passedFloor) {
+        console.log('%c noticed passed floor', 'color: green');
+        // LEFT OFF HERE
+        cur.y = 905; // This works for a horizontal I block that gets passed.
+        // But will need to be dynamic depending on the block and rotation
+        // cur.coords.forEach(c => if c.y ?? something something something)
+      }
+
+      if (atFloor || passedFloor) {
+        if (!this.collision(cur.coords)) {
+          this.killTetro(cur);
+        }
       }
     }
   }

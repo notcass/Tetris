@@ -101,6 +101,14 @@ Tetromino.prototype.show = function () {
     }
     y += this.cubeSize;
   }
+
+  // DOWNWARD SLAM
+  if (keyIsPressed) {
+    if (keyIsDown(83)) this.move('s');
+    // Too fast, need to slow down
+    // else if (keyIsDown(65)) this.move('a');
+    // else if (keyIsDown(68)) this.move('d');
+  }
 };
 
 Tetromino.prototype.move = function (key) {
@@ -113,8 +121,8 @@ Tetromino.prototype.move = function (key) {
 
     // Left
     case 'a':
-      this.coords.forEach((v) => {
-        if (v.x == playfield.x) moveable = false;
+      this.coords.forEach((c) => {
+        if (c.x == playfield.x) moveable = false;
       });
       if (moveable) this.x -= this.cubeSize; // Move Left
       this.updateCoords(this.blocks[this.type]); // Update coords
@@ -123,8 +131,8 @@ Tetromino.prototype.move = function (key) {
 
     // Right
     case 'd':
-      this.coords.forEach((v) => {
-        if (v.x == playfield.x + playfield.w - this.cubeSize) moveable = false;
+      this.coords.forEach((c) => {
+        if (c.x == playfield.x + playfield.w - this.cubeSize) moveable = false;
       });
       if (moveable) this.x += this.cubeSize; // Move right
       this.updateCoords(this.blocks[this.type]); // Update coords
@@ -133,8 +141,8 @@ Tetromino.prototype.move = function (key) {
 
     // Down
     case 's':
-      this.coords.forEach((v) => {
-        if (v.y == playfield.y + playfield.h - this.cubeSize) moveable = false;
+      this.coords.forEach((c) => {
+        if (c.y == playfield.y + playfield.h - this.cubeSize) moveable = false;
       });
       if (moveable) this.y += this.cubeSize; // Move down
       this.updateCoords(this.blocks[this.type]); // Update coords
