@@ -2,7 +2,7 @@ class Tetromino {
   constructor(playfield, type) {
     this.x = playfield.x + playfield.cubeSize * 4;
     // this.y = playfield.y + playfield.cubeSize * 7;
-    this.y = playfield.y;
+    this.y = playfield.y + playfield.cubeSize;
     this.cubeSize = playfield.cubeSize;
     this.coords = [];
     this.dead = false;

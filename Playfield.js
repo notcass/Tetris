@@ -1,22 +1,26 @@
 class Playfield {
   constructor() {
-    this.x = width / 5;
-    this.y = height / 10;
-    this.w = this.x * 3;
+    this.x = width / 5 + 75;
+    this.y = 95; //height / 10;
+    this.w = 450; // 540; // this.x * 3;
     this.h = height - this.y;
-    this.cubeSize = this.w / 10;
+    this.cubeSize = 45; //this.w / 10;
     this.deadBlocks = [];
     this.slowFalling = true;
     this.fastFalling = false;
     this.fallToRow = 0;
     this.fallSpeed = 3;
+    this.gameSpeed = 30;
+    this.totalRowsCleared = 0;
     this.sequenceCounter = 0;
     this.sequence = this.genSequence();
+    this.nextSequence = this.genSequence();
+    this.upcomingTetroType = this.sequence[1];
+    this.upcomingTetro = [];
   }
 
   show() {
-    // console.log(this.sequenceCounter);
-
+    // Main Grid
     stroke(190);
     fill(255);
     for (let x = this.x; x < this.x + this.w; x += this.cubeSize) {
@@ -36,6 +40,53 @@ class Playfield {
       sequence.push(next);
     }
     return sequence;
+  }
+
+  showUpcoming() {
+    // Set colors
+    switch (this.upcomingTetroType) {
+      case 0: // I
+        fill(0, 255, 255);
+        break;
+      case 1: // J
+        fill(0, 0, 255);
+        break;
+      case 2: // L
+        fill(255, 125, 0);
+        break;
+      case 3: // O
+        fill(255, 255, 0);
+        break;
+      case 4: // S
+        fill(0, 255, 0);
+        break;
+      case 5: // T
+        fill(155, 0, 155);
+        break;
+      case 6: // Z
+        fill(255, 0, 0);
+        break;
+      default:
+        fill(0);
+        break;
+    }
+
+    // Draw block
+    let x = 90;
+    let y = 125;
+    let block = this.upcomingTetro;
+
+    for (let i = 0; i < block[0].length; i++) {
+      for (let j = 0; j < block[0].length; j++) {
+        let cur = block[i][j];
+        if (cur === 1) {
+          square(x, y, this.cubeSize);
+        }
+        x += this.cubeSize;
+      }
+      x = 90;
+      y += this.cubeSize;
+    }
   }
 
   // Create a block for each segment of a tetromino
@@ -88,19 +139,28 @@ class Playfield {
     }
     // Spawn new Tetro from sequence
     this.spawnTetro();
+
+    // Set upcomingTetro from next in the sequence
+    let index;
+    let nextType;
+    if (this.sequenceCounter != 7) {
+      index = this.sequenceCounter;
+      nextType = this.sequence[index];
+    } else {
+      index = 0;
+      nextType = this.nextSequence[index];
+    }
+    this.upcomingTetroType = nextType;
+    this.upcomingTetro = curBlock.blocks[nextType];
   }
 
   spawnTetro() {
     curBlock = new Tetromino(this, this.sequence[this.sequenceCounter]);
-    // console.log(`==============================`);
-    // console.log(`sequence: ${this.sequence}`);
-    // console.log(`counter: ${this.sequenceCounter}`);
-    // console.log(`Sequence type: ${this.sequence[this.sequenceCounter]}`);
-    // console.log(`Block type: ${curBlock.type}`);
     this.sequenceCounter++;
 
     if (this.sequenceCounter == 7) {
-      this.sequence = this.genSequence();
+      this.sequence = this.nextSequence;
+      this.nextSequence = this.genSequence();
     }
   }
 
@@ -121,25 +181,19 @@ class Playfield {
 
     // Analysing y counts
     for (let row in yCounts) {
-      // if (frameCount % 60 == 0) console.log(row + ' ' + yCounts[row]);
       if (yCounts[row] > 9) {
-        // console.log(`row ${row} > 9`);
         rowsToClear.push(row);
       }
     }
 
     // Clear row/s
     if (rowsToClear.length != 0) {
-      // console.log('rows being cleared:');
-      // console.log(rowsToClear);
-
       rowsToClear.forEach((r) => {
         this.deadBlocks = this.deadBlocks.filter((b) => b.y != r);
       });
 
       this.fastFalling = true;
       this.fallToRow = rowsToClear[rowsToClear.length - 1];
-      // console.log(`fallToRow ${this.fallToRow}`);
     }
 
     //FIXME:
@@ -157,15 +211,17 @@ class Playfield {
           cur.y += this.fallSpeed;
         }
       }
-      // this.deadBlocks.forEach((b) => {
-      //   if (b.y == this.fallToRow) {
-      //     this.fastFalling = false;
-      //     this.fallToRow = 0;
-      //   }
-      //   if (b.y < this.fallToRow) {
-      //     b.y += this.fallSpeed;
-      //   }
-      // });
+    }
+
+    // Add num of rows cleared to total
+    this.totalRowsCleared += rowsToClear.length;
+    // Increase fall speed
+    if (this.totalRowsCleared >= 10) {
+      if (this.gameSpeed > 5) {
+        this.gameSpeed -= 5;
+        this.totalRowsCleared = 0;
+        console.log(`Gamespeed Increased! ${this.gameSpeed}`);
+      }
     }
   }
 
@@ -193,9 +249,7 @@ class Playfield {
   }
 
   fall(cur) {
-    if (frameCount % 30 == 0 && this.slowFalling) {
-      // console.log(`falling ${frameCount}`);
-
+    if (frameCount % this.gameSpeed == 0 && this.slowFalling) {
       cur.y += this.cubeSize;
       cur.updateCoords(cur.blocks[cur.type]);
 

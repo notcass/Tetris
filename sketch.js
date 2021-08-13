@@ -20,9 +20,13 @@
  *
  *  DONE -- Instead of random block, generate a random sequence of each block, pick next block in sequence
  *
- *  -- Add upcoming block
+ *  DONE -- Add upcoming tetro
+ *
+ *  -- Add 3 upcoming tetros
  *
  *  -- Score
+ *
+ *  -- Hold 'a' or 'd' key to slide left and right
  */
 
 /**
@@ -35,11 +39,18 @@
 
 let playfield;
 let curBlock;
+let song;
+
+function preload() {
+  soundFormats('mp3');
+  song = loadSound('Tetris.mp3');
+}
 
 function setup() {
-  let canvas = createCanvas(750, 950);
+  let canvas = createCanvas(1000, 950);
   canvas.parent('sketch-holder');
   resetGame();
+  // song.play();
 }
 
 function resetGame() {
@@ -80,6 +91,7 @@ function resetGame() {
 
   // Active Block
   playfield.spawnTetro();
+  playfield.upcomingTetro = curBlock.blocks[playfield.upcomingTetroType];
 
   curBlock.updateCoords(curBlock.blocks[curBlock.type]);
 }
@@ -99,6 +111,8 @@ function draw() {
   // Testing
   // curBlock.drawCoords();
   // showRowVals();
+  playfield.showUpcoming();
+  // playfield.hideTetro();
 }
 
 function keyPressed() {
@@ -117,6 +131,7 @@ function keyPressed() {
   if (key === '3') {
     curBlock.x = mouseX;
     curBlock.y = mouseY;
+    // playfield.showUpcoming();
   }
   if (key === '4') {
     playfield.killTetro(curBlock);
