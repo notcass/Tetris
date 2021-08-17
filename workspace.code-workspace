@@ -2,12 +2,7 @@
   "folders": [
     {
       "path": "."
-    },
-    {
-      "path": "..\\Testing"
     }
   ],
-  "settings": {
-    "liveServer.settings.multiRootWorkspaceName": "Tetris"
-  }
+  "settings": {}
 }

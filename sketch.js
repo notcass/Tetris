@@ -33,8 +33,11 @@
  * BUG LIST
  *  FIXED -- Can collide past the floor
  *
- *   -- VERY RARELY a single block will fall slightly too far
- *             This seems to happen during the fastfall animation
+ *   -- VERY RARELY a single or a few blocks will fall slightly too far
+ *          This seems to happen during the fastfall animation.
+ *          Hacky fix could be to check for deadblocks y values
+ *          that aren't divisible by cubesize, then bump to nearest
+ *          spot.
  */
 
 let playfield;
@@ -57,35 +60,38 @@ function resetGame() {
   playfield = new Playfield();
 
   // Testing Blocks at the bottom
-  // curBlock = new Tetromino(playfield, 0);
-  // curBlock.x = 330;
+  // curBlock = new Tetromino(playfield, 1);
+  // curBlock.x = 320;
   // curBlock.y = 905;
   // playfield.killTetro(curBlock);
 
   // curBlock = new Tetromino(playfield, 2);
-  // curBlock.x = 195;
+  // curBlock.x = 320;
+  // curBlock.y = 815;
+  // playfield.killTetro(curBlock);
+
+  // curBlock = new Tetromino(playfield, 3);
+  // curBlock.x = 410;
   // curBlock.y = 905;
   // playfield.killTetro(curBlock);
 
-  // curBlock = new Tetromino(playfield, 6);
-  // curBlock.x = 465;
+  // curBlock = new Tetromino(playfield, 3);
+  // curBlock.x = 500;
   // curBlock.y = 905;
   // playfield.killTetro(curBlock);
 
-  // curBlock = new Tetromino(playfield, 4);
-  // curBlock.x = 195;
-  // curBlock.y = 860;
+  // curBlock = new Tetromino(playfield, 3);
+  // curBlock.x = 590;
+  // curBlock.y = 905;
   // playfield.killTetro(curBlock);
 
-  // curBlock = new Tetromino(playfield, 1);
-  // curBlock.x = 330;
-  // curBlock.y = 860;
+  // curBlock = new Tetromino(playfield, 0);
+  // curBlock.x = 455;
+  // curBlock.y = 815;
   // playfield.killTetro(curBlock);
 
-  // curBlock = new Tetromino(playfield, 1);
-  // curBlock.rotate();
-  // curBlock.rotate();
-  // curBlock.x = 465;
+  // curBlock = new Tetromino(playfield, 3);
+  // curBlock.x = 590;
   // curBlock.y = 815;
   // playfield.killTetro(curBlock);
 
@@ -104,13 +110,14 @@ function draw() {
   // Fall animation
   playfield.fall(curBlock);
   playfield.clearRow();
+  playfield.makeRowsFall();
 
   // Draw dead blocks
   playfield.showDeadBlocks();
 
   // Testing
   // curBlock.drawCoords();
-  // showRowVals();
+  showRowVals();
   playfield.showUpcoming();
   // playfield.hideTetro();
 }

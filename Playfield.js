@@ -7,7 +7,6 @@ class Playfield {
     this.cubeSize = 45; //this.w / 10;
     this.deadBlocks = [];
     this.slowFalling = true;
-    this.fastFalling = false;
     this.fallToRow = 0;
     this.fallSpeed = 3;
     this.gameSpeed = 30;
@@ -156,6 +155,7 @@ class Playfield {
 
   spawnTetro() {
     curBlock = new Tetromino(this, this.sequence[this.sequenceCounter]);
+    // curBlock = new Tetromino(this, 0); // testing
     this.sequenceCounter++;
 
     if (this.sequenceCounter == 7) {
@@ -166,6 +166,13 @@ class Playfield {
 
   clearRow() {
     // Creating Object for y values and how many occurences
+    /*
+        yCounts = {
+          815: 1,
+          860: 6,
+          905: 9
+        }
+    */
     let yCounts = {};
     let rowsToClear = [];
     for (const b of this.deadBlocks) {
@@ -188,29 +195,13 @@ class Playfield {
 
     // Clear row/s
     if (rowsToClear.length != 0) {
+      for (let i = rowsToClear.length - 1; i >= 0; i--) {
+        console.log(rowsToClear[i]);
+      }
+
       rowsToClear.forEach((r) => {
         this.deadBlocks = this.deadBlocks.filter((b) => b.y != r);
       });
-
-      this.fastFalling = true;
-      this.fallToRow = rowsToClear[rowsToClear.length - 1];
-    }
-
-    //FIXME:
-    // Because we loop through blocks from the highest to lowest,
-    // We move blocks that are above the bottom ones even though the bottom should be stopped, we just haven't checked it yet
-    // EDIT: I reversed the order but it still happens VERY RARELY
-    if (this.fastFalling) {
-      for (let i = this.deadBlocks.length - 1; i >= 0; i--) {
-        let cur = this.deadBlocks[i];
-        if (cur.y == this.fallToRow) {
-          this.fastFalling = false;
-          this.fallToRow = 0;
-        }
-        if (cur.y < this.fallToRow) {
-          cur.y += this.fallSpeed;
-        }
-      }
     }
 
     // Add num of rows cleared to total
@@ -223,6 +214,39 @@ class Playfield {
         console.log(`Gamespeed Increased! ${this.gameSpeed}`);
       }
     }
+  }
+
+  // If there is an empty row, the rows above it should go down
+  // Check all rows from top to bottom
+  // For each row, check if any blocks are there
+  // If no blocks in that row, then move all blocks above it down by gamespeed each frame
+  makeRowsFall() {
+    let rows = [];
+    let lowestEmptyRow = 0;
+    // Add rows to array
+    for (
+      let y = this.y + this.h - this.cubeSize;
+      y >= this.y;
+      y -= this.cubeSize
+    ) {
+      rows.push(y);
+    }
+
+    // Find lowest empty row
+    rows.forEach((row) => {
+      let emptyRow = true;
+      this.deadBlocks.forEach((block) => {
+        if (block.y == row) {
+          emptyRow = false;
+        }
+      });
+      if (emptyRow && row > lowestEmptyRow) lowestEmptyRow = row;
+    });
+
+    // Move any blocks above the lowest row down
+    this.deadBlocks.forEach((block) => {
+      if (block.y < lowestEmptyRow) block.y += this.fallSpeed;
+    });
   }
 
   showDeadBlocks() {
