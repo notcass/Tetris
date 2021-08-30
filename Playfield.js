@@ -29,6 +29,20 @@ class Playfield {
     }
   }
 
+  showBorder() {
+    stroke(0);
+    strokeWeight(4);
+    noFill();
+    rect(this.x, this.y, this.w, this.h);
+  }
+
+  update() {
+    this.fall(curTetro);
+    this.clearRow();
+    this.makeRowsFall();
+    this.showDeadBlocks();
+  }
+
   genSequence() {
     this.sequenceCounter = 0;
     const nums = [0, 1, 2, 3, 4, 5, 6];
@@ -70,14 +84,14 @@ class Playfield {
         break;
     }
 
-    // Draw block
+    // Draw tetro
     let x = 90;
     let y = 125;
-    let block = this.upcomingTetro;
+    const TETRO = this.upcomingTetro;
 
-    for (let i = 0; i < block[0].length; i++) {
-      for (let j = 0; j < block[0].length; j++) {
-        let cur = block[i][j];
+    for (let i = 0; i < TETRO[0].length; i++) {
+      for (let j = 0; j < TETRO[0].length; j++) {
+        let cur = TETRO[i][j];
         if (cur === 1) {
           square(x, y, this.cubeSize);
         }
@@ -88,32 +102,32 @@ class Playfield {
     }
   }
 
-  // Create a block for each segment of a tetromino
+  // Create a block for each segment of a tetro
   killTetro(t) {
-    let type = t.type;
-    let block = t.blocks[type];
+    const TYPE = t.type;
+    const TETRO = t.tetros[TYPE];
 
     // Color
     let r = 0;
     let g = 0;
     let b = 0;
-    if (type == 2 || type == 3 || type == 6) r = 255;
-    if (type == 5) r = 155;
-    if (type == 0 || type == 3 || type == 4) g = 255;
-    if (type == 2) g = 125;
-    if (type == 0 || type == 1) b = 255;
-    if (type == 5) b = 155;
+    if (TYPE == 2 || TYPE == 3 || TYPE == 6) r = 255;
+    if (TYPE == 5) r = 155;
+    if (TYPE == 0 || TYPE == 3 || TYPE == 4) g = 255;
+    if (TYPE == 2) g = 125;
+    if (TYPE == 0 || TYPE == 1) b = 255;
+    if (TYPE == 5) b = 155;
 
     // Creating each block
     let x = t.x;
     let y = t.y;
 
     y = t.y - this.cubeSize;
-    for (let i = 0; i < block[0].length; i++) {
+    for (let i = 0; i < TETRO[0].length; i++) {
       x = t.x - this.cubeSize;
 
-      for (let j = 0; j < block[0].length; j++) {
-        let cur = block[i][j];
+      for (let j = 0; j < TETRO[0].length; j++) {
+        let cur = TETRO[i][j];
         if (cur == 1) {
           // Block Template
           let newBlock = {
@@ -150,12 +164,12 @@ class Playfield {
       nextType = this.nextSequence[index];
     }
     this.upcomingTetroType = nextType;
-    this.upcomingTetro = curBlock.blocks[nextType];
+    this.upcomingTetro = curTetro.tetros[nextType];
   }
 
   spawnTetro() {
-    curBlock = new Tetromino(this, this.sequence[this.sequenceCounter]);
-    // curBlock = new Tetromino(this, 0); // testing
+    curTetro = new Tetromino(this, this.sequence[this.sequenceCounter]);
+    // curTetro = new Tetromino(this, 0); // testing
     this.sequenceCounter++;
 
     if (this.sequenceCounter == 7) {
@@ -195,13 +209,13 @@ class Playfield {
 
     // Clear row/s
     if (rowsToClear.length != 0) {
-      for (let i = rowsToClear.length - 1; i >= 0; i--) {
-        console.log(rowsToClear[i]);
-      }
-
       rowsToClear.forEach((r) => {
         this.deadBlocks = this.deadBlocks.filter((b) => b.y != r);
       });
+
+      if (rowsToClear.length === 4) {
+        console.log('TETRIS');
+      }
     }
 
     // Add num of rows cleared to total
@@ -250,6 +264,7 @@ class Playfield {
   }
 
   showDeadBlocks() {
+    stroke(0);
     this.deadBlocks.forEach((b) => {
       b.show();
 
@@ -275,7 +290,7 @@ class Playfield {
   fall(cur) {
     if (frameCount % this.gameSpeed == 0 && this.slowFalling) {
       cur.y += this.cubeSize;
-      cur.updateCoords(cur.blocks[cur.type]);
+      cur.updateCoords(cur.tetros[cur.type]);
 
       let atFloor = false;
       let passedFloor = false;

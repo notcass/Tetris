@@ -27,6 +27,10 @@
  *  -- Score
  *
  *  -- Hold 'a' or 'd' key to slide left and right
+ *
+ *  -- Add something special for a Tetris (clearing 4 rows at once?)
+ *
+ *  -- Button to swap current Tetro for upcoming one
  */
 
 /**
@@ -41,12 +45,15 @@
  */
 
 let playfield;
-let curBlock;
+let curTetro;
 let song;
+let backgroundImg;
 
 function preload() {
   soundFormats('mp3');
-  song = loadSound('Tetris.mp3');
+  song = loadSound('assets/Tetris.mp3');
+  backgroundImg = loadImage('assets/mountain.jpg');
+  // backgroundImg = loadImage('assets/city.jpg');
 }
 
 function setup() {
@@ -60,90 +67,85 @@ function resetGame() {
   playfield = new Playfield();
 
   // Testing Blocks at the bottom
-  // curBlock = new Tetromino(playfield, 1);
-  // curBlock.x = 320;
-  // curBlock.y = 905;
-  // playfield.killTetro(curBlock);
+  // curTetro = new Tetromino(playfield, 1);
+  // curTetro.x = 320;
+  // curTetro.y = 905;
+  // playfield.killTetro(curTetro);
 
-  // curBlock = new Tetromino(playfield, 2);
-  // curBlock.x = 320;
-  // curBlock.y = 815;
-  // playfield.killTetro(curBlock);
+  // curTetro = new Tetromino(playfield, 2);
+  // curTetro.x = 320;
+  // curTetro.y = 815;
+  // playfield.killTetro(curTetro);
 
-  // curBlock = new Tetromino(playfield, 3);
-  // curBlock.x = 410;
-  // curBlock.y = 905;
-  // playfield.killTetro(curBlock);
+  // curTetro = new Tetromino(playfield, 3);
+  // curTetro.x = 410;
+  // curTetro.y = 905;
+  // playfield.killTetro(curTetro);
 
-  // curBlock = new Tetromino(playfield, 3);
-  // curBlock.x = 500;
-  // curBlock.y = 905;
-  // playfield.killTetro(curBlock);
+  // curTetro = new Tetromino(playfield, 3);
+  // curTetro.x = 500;
+  // curTetro.y = 905;
+  // playfield.killTetro(curTetro);
 
-  // curBlock = new Tetromino(playfield, 3);
-  // curBlock.x = 590;
-  // curBlock.y = 905;
-  // playfield.killTetro(curBlock);
+  // curTetro = new Tetromino(playfield, 3);
+  // curTetro.x = 590;
+  // curTetro.y = 905;
+  // playfield.killTetro(curTetro);
 
-  // curBlock = new Tetromino(playfield, 0);
-  // curBlock.x = 455;
-  // curBlock.y = 815;
-  // playfield.killTetro(curBlock);
+  // curTetro = new Tetromino(playfield, 0);
+  // curTetro.x = 455;
+  // curTetro.y = 815;
+  // playfield.killTetro(curTetro);
 
-  // curBlock = new Tetromino(playfield, 3);
-  // curBlock.x = 590;
-  // curBlock.y = 815;
-  // playfield.killTetro(curBlock);
+  // curTetro = new Tetromino(playfield, 3);
+  // curTetro.x = 590;
+  // curTetro.y = 815;
+  // playfield.killTetro(curTetro);
 
   // Active Block
   playfield.spawnTetro();
-  playfield.upcomingTetro = curBlock.blocks[playfield.upcomingTetroType];
+  playfield.upcomingTetro = curTetro.tetros[playfield.upcomingTetroType];
 
-  curBlock.updateCoords(curBlock.blocks[curBlock.type]);
+  curTetro.updateCoords(curTetro.tetros[curTetro.type]);
 }
 
 function draw() {
-  background(0);
-  playfield.show();
-  curBlock.show();
-
-  // Fall animation
-  playfield.fall(curBlock);
-  playfield.clearRow();
-  playfield.makeRowsFall();
-
-  // Draw dead blocks
-  playfield.showDeadBlocks();
+  // background(0);
+  image(backgroundImg, 0, 0, width, height);
+  // playfield.show();
+  playfield.showBorder();
+  playfield.update();
+  curTetro.show();
 
   // Testing
-  // curBlock.drawCoords();
-  showRowVals();
+  // curTetro.drawCoords();
+  // showRowVals();
   playfield.showUpcoming();
   // playfield.hideTetro();
 }
 
 function keyPressed() {
   if (key === 'w' || key === 'a' || key === 'd') {
-    curBlock.move(key);
+    curTetro.move(key);
   }
   if (key === 'e') {
-    curBlock.rotate();
+    curTetro.rotate();
   }
   if (key === '1') {
-    if (curBlock.type > 0) curBlock.type--;
+    if (curTetro.type > 0) curTetro.type--;
   }
   if (key === '2') {
-    if (curBlock.type < 6) curBlock.type++;
+    if (curTetro.type < 6) curTetro.type++;
   }
   if (key === '3') {
-    curBlock.x = mouseX;
-    curBlock.y = mouseY;
+    curTetro.x = mouseX;
+    curTetro.y = mouseY;
     // playfield.showUpcoming();
   }
   if (key === '4') {
-    playfield.killTetro(curBlock);
+    playfield.killTetro(curTetro);
     let randBlock = floor(random(7));
-    curBlock = new Tetromino(playfield, randBlock);
+    curTetro = new Tetromino(playfield, randBlock);
   }
   if (key === 'q') {
     isLooping() ? noLoop() : loop();

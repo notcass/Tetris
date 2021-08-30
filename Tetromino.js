@@ -8,7 +8,7 @@ class Tetromino {
     this.dead = false;
     this.type = type;
     this.aliveTime = 0;
-    this.blocks = [
+    this.tetros = [
       [
         [0, 0, 0, 0],
         [1, 1, 1, 1],
@@ -51,13 +51,13 @@ class Tetromino {
         [0, 0, 0],
       ],
     ];
-    this.updateCoords(this.blocks[this.type]);
+    this.updateCoords(this.tetros[this.type]);
   }
 }
 
 Tetromino.prototype.show = function () {
   stroke(0);
-  strokeWeight(1);
+  strokeWeight(4);
   switch (this.type) {
     case 0: // I
       fill(0, 255, 255);
@@ -86,14 +86,14 @@ Tetromino.prototype.show = function () {
   }
   let x = this.x;
   let y = this.y;
-  let block = this.blocks[this.type];
+  const TETRO = this.tetros[this.type];
 
   y = this.y - this.cubeSize;
-  for (let i = 0; i < block[0].length; i++) {
+  for (let i = 0; i < TETRO[0].length; i++) {
     x = this.x - this.cubeSize;
 
-    for (let j = 0; j < block[0].length; j++) {
-      let cur = block[i][j];
+    for (let j = 0; j < TETRO[0].length; j++) {
+      let cur = TETRO[i][j];
       if (cur == 1) {
         square(x, y, this.cubeSize);
       }
@@ -126,7 +126,7 @@ Tetromino.prototype.move = function (key) {
         if (c.x == playfield.x) moveable = false;
       });
       if (moveable) this.x -= this.cubeSize; // Move Left
-      this.updateCoords(this.blocks[this.type]); // Update coords
+      this.updateCoords(this.tetros[this.type]); // Update coords
       if (playfield.collision(this.coords)) this.x += this.cubeSize; // Move back if any collision
       break;
 
@@ -136,7 +136,7 @@ Tetromino.prototype.move = function (key) {
         if (c.x == playfield.x + playfield.w - this.cubeSize) moveable = false;
       });
       if (moveable) this.x += this.cubeSize; // Move right
-      this.updateCoords(this.blocks[this.type]); // Update coords
+      this.updateCoords(this.tetros[this.type]); // Update coords
       if (playfield.collision(this.coords)) this.x -= this.cubeSize; // Move back if any collision
       break;
 
@@ -146,11 +146,11 @@ Tetromino.prototype.move = function (key) {
         if (c.y == playfield.y + playfield.h - this.cubeSize) moveable = false;
       });
       if (moveable) this.y += this.cubeSize; // Move down
-      this.updateCoords(this.blocks[this.type]); // Update coords
+      this.updateCoords(this.tetros[this.type]); // Update coords
       if (playfield.collision(this.coords)) this.y -= this.cubeSize; // Move back if any collision
       break;
   }
-  this.updateCoords(this.blocks[this.type]);
+  this.updateCoords(this.tetros[this.type]);
 };
 
 Tetromino.prototype.updateCoords = function (block) {
@@ -192,10 +192,11 @@ Tetromino.prototype.drawCoords = function () {
     circle(v.x, v.y, 25);
   });
 };
+
 Tetromino.prototype.rotate = function () {
   if (this.type != 3) {
-    let block = this.blocks[this.type];
-    const LEN = block.length;
+    const TETRO = this.tetros[this.type];
+    const LEN = TETRO.length;
     let copy = [];
     for (let n = 0; n < LEN; n++) {
       copy.push([]);
@@ -204,7 +205,7 @@ Tetromino.prototype.rotate = function () {
     // Store rotated matrix in copy
     for (let i = 0; i < LEN; i++) {
       for (let j = 0; j < LEN; j++) {
-        copy[j][LEN - 1 - i] = block[i][j];
+        copy[j][LEN - 1 - i] = TETRO[i][j];
       }
     }
 
@@ -216,7 +217,7 @@ Tetromino.prototype.rotate = function () {
 
     // If the coords of the rotated tetro don't collide with anything, then update to the rotated tetro
     if (!playfield.collision(this.coords)) {
-      this.blocks[this.type] = copy;
+      this.tetros[this.type] = copy;
 
       // If they do collide, then don't update, and revert the bump.
     } else {
@@ -224,7 +225,7 @@ Tetromino.prototype.rotate = function () {
       this.y -= bumps.yBump;
     }
 
-    this.updateCoords(this.blocks[this.type]);
+    this.updateCoords(this.tetros[this.type]);
   }
 };
 
