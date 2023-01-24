@@ -141,13 +141,22 @@ Tetromino.prototype.move = function (key) {
       break;
 
     // Down
+    // TODO:
     case 's':
+      // Check if any part of tetro is at the bottom
       this.coords.forEach((c) => {
         if (c.y == playfield.y + playfield.h - this.cubeSize) moveable = false;
       });
-      if (moveable) this.y += this.cubeSize; // Move down
-      this.updateCoords(this.tetros[this.type]); // Update coords
-      if (playfield.collision(this.coords)) this.y -= this.cubeSize; // Move back if any collision
+
+      // Move down if possible
+      if (moveable) this.y += this.cubeSize;
+
+      // Update coords
+      this.updateCoords(this.tetros[this.type]);
+
+      // Move back if any collision
+      if (playfield.collision(this.coords)) this.y -= this.cubeSize;
+
       break;
   }
   this.updateCoords(this.tetros[this.type]);
