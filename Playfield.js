@@ -1,16 +1,17 @@
 class Playfield {
   constructor() {
     this.x = width / 5 + 75;
-    this.y = 95; //height / 10;
-    this.w = 450; // 540; // this.x * 3;
+    this.y = 95;
+    this.w = 450;
     this.h = height - this.y;
-    this.cubeSize = 45; //this.w / 10;
+    this.cubeSize = 45;
     this.deadBlocks = [];
     this.slowFalling = true;
     this.fallToRow = 0;
     this.fallSpeed = 3;
     this.gameSpeed = 30;
-    this.totalRowsCleared = 0;
+    this.rowsCleared = 0;
+    this.playBackRate = 1;
     this.sequenceCounter = 0;
     this.sequence = this.genSequence();
     this.nextSequence = this.genSequence();
@@ -20,20 +21,19 @@ class Playfield {
 
   show() {
     // Main Grid
-    stroke(190);
-    fill(255);
+    strokeWeight(4);
+    stroke(27, 62, 101);
+    fill(40);
     for (let x = this.x; x < this.x + this.w; x += this.cubeSize) {
       for (let y = this.y; y < this.y + this.h; y += this.cubeSize) {
         rect(x, y, this.cubeSize, this.cubeSize);
       }
     }
-  }
 
-  showBorder() {
+    //Border
     stroke(0);
     strokeWeight(4);
     noFill();
-    rect(this.x, this.y, this.w, this.h);
   }
 
   update() {
@@ -179,7 +179,7 @@ class Playfield {
   }
 
   clearRow() {
-    // Creating Object for y values and how many occurences
+    // Template object to track y values and how many occurences
     /*
         yCounts = {
           815: 1,
@@ -218,13 +218,19 @@ class Playfield {
       }
     }
 
-    // Add num of rows cleared to total
-    this.totalRowsCleared += rowsToClear.length;
+    // Add num of rows cleared to current total
+    this.rowsCleared += rowsToClear.length;
+
+    const clearsNeeded = 5;
+    const speedIncrement = 5;
+
     // Increase fall speed
-    if (this.totalRowsCleared >= 10) {
-      if (this.gameSpeed > 5) {
-        this.gameSpeed -= 5;
-        this.totalRowsCleared = 0;
+    if (this.rowsCleared >= clearsNeeded) {
+      if (this.gameSpeed > speedIncrement) {
+        this.gameSpeed -= speedIncrement;
+        this.rowsCleared = 0;
+        this.playBackRate += 0.02;
+        song.rate(this.playBackRate);
         console.log(`Gamespeed Increased! ${this.gameSpeed}`);
       }
     }
@@ -267,24 +273,19 @@ class Playfield {
     stroke(0);
     this.deadBlocks.forEach((b) => {
       b.show();
-
-      // Show x, y positions
-      // fill(255, 255, 0);
-      // circle(b.x, b.y, 25);
     });
   }
 
+  // Compare a tetros coords with all the dead blocks for collision
   collision(coords) {
-    let hit = false;
-
-    coords.forEach((c) => {
-      this.deadBlocks.forEach((b) => {
+    for (const c of coords) {
+      for (const b of this.deadBlocks) {
         if (c.x == b.x && c.y == b.y) {
-          hit = true;
+          return true;
         }
-      });
-    });
-    return hit;
+      }
+    }
+    return false;
   }
 
   fall(cur) {

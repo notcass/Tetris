@@ -1,13 +1,13 @@
 class Tetromino {
   constructor(playfield, type) {
     this.x = playfield.x + playfield.cubeSize * 4;
-    // this.y = playfield.y + playfield.cubeSize * 7;
     this.y = playfield.y + playfield.cubeSize;
     this.cubeSize = playfield.cubeSize;
     this.coords = [];
     this.dead = false;
     this.type = type;
     this.aliveTime = 0;
+    this.slideTimer = 0;
     this.tetros = [
       [
         [0, 0, 0, 0],
@@ -102,24 +102,32 @@ Tetromino.prototype.show = function () {
     y += this.cubeSize;
   }
 
-  // DOWNWARD SLAM
+  // DOWNWARD SLAM + LEFT AND RIGHT SLIDES
+  //FIXME: The controls can be a little wonky if you really try to break them
   if (keyIsPressed && this.aliveTime > 25) {
-    if (keyIsDown(83)) this.move('s');
-    // Too fast, need to slow down
-    // else if (keyIsDown(65)) this.move('a');
-    // else if (keyIsDown(68)) this.move('d');
+    if (key == 'a' || key == 'd') {
+      this.slideTimer++;
+      if (this.slideTimer > 5 && frameCount % 2 == 0) {
+        this.move(key);
+      }
+    } else if (key == 's') {
+      this.move('s');
+    }
   }
+
   this.aliveTime++;
+};
+
+Tetromino.prototype.keyReleased = function (key) {
+  if (key == 'a' || key == 'd') {
+    this.slideTimer = 0;
+  }
 };
 
 Tetromino.prototype.move = function (key) {
   let moveable = true;
 
   switch (key) {
-    case 'w':
-      this.y -= this.cubeSize;
-      break;
-
     // Left
     case 'a':
       this.coords.forEach((c) => {
@@ -141,7 +149,6 @@ Tetromino.prototype.move = function (key) {
       break;
 
     // Down
-    // TODO:
     case 's':
       // Check if any part of tetro is at the bottom
       this.coords.forEach((c) => {
@@ -162,6 +169,7 @@ Tetromino.prototype.move = function (key) {
   this.updateCoords(this.tetros[this.type]);
 };
 
+// Update the coords for the blocks that make up a tetromino
 Tetromino.prototype.updateCoords = function (block) {
   this.coords = new Array();
   let x = this.x;
@@ -175,12 +183,6 @@ Tetromino.prototype.updateCoords = function (block) {
       let cur = block[i][j];
       if (cur == 1) {
         this.coords.push(createVector(x, y));
-
-        // this.coords.push(createVector(x + this.cubeSize, y));
-
-        // this.coords.push(createVector(x, y + this.cubeSize));
-
-        // this.coords.push(createVector(x + this.cubeSize, y + this.cubeSize));
       }
       x += this.cubeSize;
     }
@@ -189,17 +191,11 @@ Tetromino.prototype.updateCoords = function (block) {
 
   // Filter duplicate coords -- (copied from stack overflow)
   // This is still needed even after we switched from vertices
+  // Edit 1/24/23: Is it still needed though?
   this.coords = this.coords.filter(
     (coord, index, self) =>
       index === self.findIndex((c) => c.x === coord.x && c.y === coord.y)
   );
-};
-
-Tetromino.prototype.drawCoords = function () {
-  this.coords.forEach((v) => {
-    fill(255, 255, 0);
-    circle(v.x, v.y, 25);
-  });
 };
 
 Tetromino.prototype.rotate = function () {
@@ -238,6 +234,23 @@ Tetromino.prototype.rotate = function () {
   }
 };
 
+/*
+BumpCheck() is a helper for when we rotate a piece that is next to a wall.
+Imagine an "I" piece up against the right wall like so
+               |
+             []|
+             []|
+             []|
+             []|
+               |
+We can't rotate it in place because of clipping,
+so we "bump" it away
+               |                                |
+            [][][][]   is bumped to     [][][][]|
+               |                                |
+               |                                |
+This applies to side walls and the floor
+*/
 Tetromino.prototype.bumpCheck = function () {
   let xBump = 0;
   let yBump = 0;
@@ -267,4 +280,12 @@ Tetromino.prototype.bumpCheck = function () {
   this.x += xBump;
   this.y += yBump;
   return { xBump, yBump };
+};
+
+// Debug function
+Tetromino.prototype.drawCoords = function () {
+  this.coords.forEach((v) => {
+    fill(255, 255, 0);
+    circle(v.x, v.y, 25);
+  });
 };
